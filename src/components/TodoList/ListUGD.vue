@@ -210,7 +210,7 @@ export default {
             if (this.editedIndex > -1) {
                 Object.assign(this.todos[this.editedIndex], this.formTodo)
             } else {
-                this.desserts.push(this.formTodo)
+                this.todos.push(this.formTodo)
             }
             this.close()
         },
