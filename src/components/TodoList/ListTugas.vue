@@ -27,7 +27,7 @@
                     Tambah
                 </v-btn>
             </v-card-title>
-            <v-data-table :headers="headers" :items="todos" :search="search" :expanded.sync="expanded" item-key="note" show-expand :custom-sort="customSort">
+            <v-data-table :headers="headers" :items="todos" :search="search" :expanded.sync="expanded" item-key="note" show-expand>
                 <template v-slot:[`item.priority`]="{ item }">
                     <td>
                         <v-chip color="red" label outlined v-if="item.priority == 'Penting'">{{ item.priority }}</v-chip>
@@ -36,12 +36,15 @@
                     </td>
                 </template>
                 <template v-slot:[`item.actions`]="{ item }">
-                    <v-btn small class="mr-2" @click="editItem(item)">
-                        edit
-                    </v-btn>
-                    <v-btn small @click="deleteItem(item)">
-                        delete
-                    </v-btn>
+                    <v-icon small color="blue" class="mr-2" @click="editItem(item)">
+                        mdi-pencil
+                    </v-icon>
+                    <v-icon small color="red" @click="deleteItem(item)">
+                        mdi-delete
+                    </v-icon>
+                </template>
+                <template v-slot:item.checkBox="{ item }">
+                    <v-simple-checkbox v-model="item.checkBox"></v-simple-checkbox>
                 </template>
                 <template v-slot:expanded-item="{ headers, item }">
                     <td :colspan="headers.length" class="pa-5 ml-10">
@@ -105,6 +108,25 @@
               </v-card-actions>
             </v-card>
         </v-dialog>
+
+        <v-card class="mt-10" v-if="Object.keys(this.todos.filter(this.filters.notDone)).length > 0">
+            <v-card-title>
+                <h4>Delete Multiple : </h4>
+            </v-card-title>
+            <v-card-text>
+                <ul>
+                    <li v-for="item in todos" v-if="item.checkBox === true" class="text-justify">{{ item.task }}</li>
+                </ul>
+            </v-card-text>
+            <v-btn
+            depressed
+            color="error"
+            class="d-flex justify-start ml-5"
+            @click="destroyTodo"
+            >
+                Hapus semua
+            </v-btn>
+        </v-card>
     </v-main>
 </template>
 <script>
@@ -125,6 +147,7 @@ export default {
                 },
                 { text: "Priority", value: "priority" },
                 { text: "Actions", value: "actions" },
+                { text: "", value: "checkBox"},
             ],
             todos: [
                 {
@@ -132,18 +155,21 @@ export default {
                     priority: "Penting",
                     note: "huffttt",
                     idPriority: 3,
+                    checkBox: false,
                 },
                 {
                     task: "nongkrong",
                     priority: "Tidak Penting",
                     note: "bersama tman2",
                     idPriority: 1,
+                    checkBox: false,
                 },
                 {
                     task: "masak",
                     priority: "Biasa",
                     note: "masak air 500ml",
                     idPriority: 2,
+                    checkBox: false,
                 },
             ],
             formTodo: {
@@ -168,11 +194,27 @@ export default {
             sortKey: "",
             direction: null,
             sortDir: null,
+            filters: {
+                notDone: function(todo) {
+                    return !todo.checkBox;
+                },
+            },
         };
     },
     computed: {
         formTitle () {
             return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+        },
+        checked: {
+            get() {
+                return this.todos.checkBox;
+            },
+            set(value) {
+                this.todos.checkBox = value;
+            }
+        },
+        filteredTodos: function(){
+            return this.todos.filter(this.filters.notDone);
         },
     },
     watch: {
@@ -256,24 +298,8 @@ export default {
                 this.todos.sort((a,b) => a[id] < b[id] ? -1 : 1)
             }
         },
-        customSort(items, index, isDesc) {
-            isDesc = this.direction;
-            items.sort((a, b) => {
-                if (index === "date") {
-                    if (isDesc) {
-                        return b.idPriority - a.idPriority;
-                    } else {
-                        return a.idPriority - b.idPriority;
-                    }
-                } else {
-                    if (!isDesc) {
-                        return a[index] < b[index] ? -1 : 1;
-                    } else {
-                        return b[index] < a[index] ? -1 : 1;
-                    }
-                }
-            });
-            return items;
+        destroyTodo(){
+            this.todos = this.todos.filter(this.filters.notDone);
         },
     },
 };

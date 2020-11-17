@@ -42,6 +42,7 @@ export default {
                 { title: "Dashboard", to: "/" },
                 { title: "GD", to: "/gd" },
                 { title: "UGD", to: "/ugd" },
+                { title: "TGS", to: "/tgs" },
             ],
         };
     },
